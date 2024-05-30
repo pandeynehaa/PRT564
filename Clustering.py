@@ -3,6 +3,7 @@ from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
+import statsmodels.api as sm
 
 # Load the dataset
 data = pd.read_csv('D:\\CDU sem 2\\Data analyst\\Assignment2\\retractions35215.csv')
@@ -36,6 +37,28 @@ X_pca = pca.fit_transform(X_scaled)
 pca_df = pd.DataFrame(data=X_pca, columns=['PC1', 'PC2'])
 pca_df['Cluster'] = clusters
 
+# dropping missing values
+data.dropna(inplace=True)
+
+# non-numeric columns are dropped for now for simplicity
+df_numeric = data.select_dtypes(include=['number'])
+
+# assuming 'CitationCount' is the target variable for multiple linear regression
+X = df_numeric.drop('CitationCount', axis=1)
+y = df_numeric['CitationCount']
+
+# fitting multiple linear regression model
+model = sm.OLS(y, sm.add_constant(X)).fit()
+
+# extracting coefficient of determination (r-squared)
+r_squared = model.rsquared
+print("\nCoefficient of Determination (r-squared):", r_squared)
+ 
+# extracting p-values for the coefficients
+p_values = model.pvalues
+print("\nP-values for the coefficients:")
+print(p_values)
+ 
 # Plotting the scatter plot with clusters
 plt.figure(figsize=(8, 6))
 plt.scatter(pca_df['PC1'], pca_df['PC2'], c=pca_df['Cluster'], cmap='viridis', alpha=0.5)
